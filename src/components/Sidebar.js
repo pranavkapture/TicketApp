@@ -9,7 +9,7 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 import DeleteIcon from '@mui/icons-material/OpenInBrowser';
 
 const Sidebar = ({ setStatusFilter }) => {
-  const { setUsername } = useContext(UserContext);
+  const { username,setUsername } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -25,7 +25,7 @@ const Sidebar = ({ setStatusFilter }) => {
             <img src="/logo-sm.svg" alt="Logo" className="h-8 w-8 mr-2" />
             <h3 className="text-xl text-yellow-100 font-bold">Kapture Cx</h3>
           </div>
-          <h4 className="text-xl text-yellow-100 font-bold">Welcome, Pranav</h4>
+          <h4 className="text-xl text-yellow-100 font-bold">Welcome, {username}</h4>
         </div>
         <List component="nav">
           <ListItem button onClick={() => setStatusFilter('All')} className="hover:bg-gray-500 rounded-lg">

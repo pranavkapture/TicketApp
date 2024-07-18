@@ -1,120 +1,183 @@
 import React from 'react';
-import { useFormik } from 'formik';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { connect } from 'react-redux';
+import { addTicket, updateTicket } from '../actions/ticketActions';
 import * as Yup from 'yup';
 
 const validationSchema = Yup.object({
-  name: Yup.string().required('Name is required'),
-  email: Yup.string().email('Invalid email format').required('Email is required'),
-  priority: Yup.string().required('Priority is required'),
-  mode: Yup.string().required('Mode is required'),
-  description: Yup.string().required('Description is required'),
+  name: Yup.string().required('Required'),
+  email: Yup.string().email('Invalid email address').required('Required'),
+  priority: Yup.string().required('Required'),
+  mode: Yup.string().required('Required'),
+  status: Yup.string().required('Required'),
+  description: Yup.string().required('Required'),
 });
 
-const CreateTicketForm = ({ onCreate }) => {
-  const formik = useFormik({
-    initialValues: {
-      name: '',
-      email: '',
-      priority: 'low',
-      mode: 'online',
-      description: '',
-    },
-    validationSchema: validationSchema,
-    onSubmit: (values, { resetForm }) => {
-      onCreate(values);
-      resetForm();
-    },
-  });
+const CreateTicketForm = ({ addTicket, updateTicket, onClose, initialValues }) => {
+  const isEditMode = !!initialValues; // Check if initialValues are provided to determine edit mode
+
+  const handleSubmit = (values, { resetForm }) => {
+    if (isEditMode) {
+      updateTicket({ ...values, email: initialValues.email });
+    } else {
+      addTicket(values);
+    }
+    resetForm();
+    onClose();
+  };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="max-w-lg bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-          Name
-        </label>
-        <input
-          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formik.touched.name && formik.errors.name ? 'border-red-500' : ''}`}
-          id="name"
-          type="text"
-          placeholder="Name"
-          {...formik.getFieldProps('name')}
-        />
-        {formik.touched.name && formik.errors.name ? (
-          <p className="text-red-500 text-xs italic">{formik.errors.name}</p>
-        ) : null}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-          Email
-        </label>
-        <input
-          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formik.touched.email && formik.errors.email ? 'border-red-500' : ''}`}
-          id="email"
-          type="email"
-          placeholder="Email"
-          {...formik.getFieldProps('email')}
-        />
-        {formik.touched.email && formik.errors.email ? (
-          <p className="text-red-500 text-xs italic">{formik.errors.email}</p>
-        ) : null}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="priority">
-          Priority
-        </label>
-        <select
-          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formik.touched.priority && formik.errors.priority ? 'border-red-500' : ''}`}
-          id="priority"
-          {...formik.getFieldProps('priority')}
-        >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        {formik.touched.priority && formik.errors.priority ? (
-          <p className="text-red-500 text-xs italic">{formik.errors.priority}</p>
-        ) : null}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mode">
-          Mode
-        </label>
-        <select
-          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formik.touched.mode && formik.errors.mode ? 'border-red-500' : ''}`}
-          id="mode"
-          {...formik.getFieldProps('mode')}
-        >
-          <option value="online">Online</option>
-          <option value="offline">Offline</option>
-        </select>
-        {formik.touched.mode && formik.errors.mode ? (
-          <p className="text-red-500 text-xs italic">{formik.errors.mode}</p>
-        ) : null}
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-          Description
-        </label>
-        <textarea
-          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${formik.touched.description && formik.errors.description ? 'border-red-500' : ''}`}
-          id="description"
-          placeholder="Description"
-          {...formik.getFieldProps('description')}
-        />
-        {formik.touched.description && formik.errors.description ? (
-          <p className="text-red-500 text-xs italic">{formik.errors.description}</p>
-        ) : null}
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          type="submit"
-          className="bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Create Ticket
-        </button>
-      </div>
-    </form>
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 overflow-auto">
+      <Formik
+        initialValues={initialValues || {
+          name: '',
+          email: '',
+          priority: 'low',
+          mode: 'mail',
+          status: 'open',
+          description: '',
+        }}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        <Form className="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 min-w-[300px] max-w-[800px] overflow-hidden">
+          <h2 className="text-2xl font-bold mb-4">{isEditMode ? 'Edit Ticket' : 'Create Ticket'}</h2>
+          <div className="mb-4">
+            <label htmlFor="name" className="block text-sm font-bold mb-2">
+              Name
+            </label>
+            <Field
+              type="text"
+              id="name"
+              name="name"
+              className="w-full px-3 py-2 border rounded"
+            />
+            <ErrorMessage
+              name="name"
+              component="div"
+              className="text-red-500 text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-bold mb-2">
+              Email
+            </label>
+            <Field
+              type="email"
+              id="email"
+              name="email"
+              className="w-full px-3 py-2 border rounded"
+            />
+            <ErrorMessage
+              name="email"
+              component="div"
+              className="text-red-500 text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="priority" className="block text-sm font-bold mb-2">
+              Priority
+            </label>
+            <Field
+              as="select"
+              id="priority"
+              name="priority"
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </Field>
+            <ErrorMessage
+              name="priority"
+              component="div"
+              className="text-red-500 text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="mode" className="block text-sm font-bold mb-2">
+              Mode
+            </label>
+            <Field
+              as="select"
+              id="mode"
+              name="mode"
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="mail">Mail</option>
+              <option value="sms">SMS</option>
+              <option value="gmail">Gmail</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="facebook">Facebook</option>
+              <option value="twitter">Twitter</option>
+            </Field>
+            <ErrorMessage
+              name="mode"
+              component="div"
+              className="text-red-500 text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="status" className="block text-sm font-bold mb-2">
+              Status
+            </label>
+            <Field
+              as="select"
+              id="status"
+              name="status"
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option value="open">Open</option>
+              <option value="in-progress">In-Progress</option>
+              <option value="close">Close</option>
+            </Field>
+            <ErrorMessage
+              name="status"
+              component="div"
+              className="text-red-500 text-sm"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="description" className="block text-sm font-bold mb-2">
+              Description
+            </label>
+            <Field
+              as="textarea"
+              id="description"
+              name="description"
+              rows="4"
+              className="w-full px-3 py-2 border rounded"
+            />
+            <ErrorMessage
+              name="description"
+              component="div"
+              className="text-red-500 text-sm"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 mr-2 bg-gray-500 text-white rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              {isEditMode ? 'Update' : 'Submit'}
+            </button>
+          </div>
+        </Form>
+      </Formik>
+    </div>
   );
 };
 
-export default CreateTicketForm;
+const mapDispatchToProps = {
+  addTicket,
+  updateTicket,
+};
+
+export default connect(null, mapDispatchToProps)(CreateTicketForm);
